@@ -1,6 +1,14 @@
 # Between Memories
 
-빠른 반복 개발, 안정적인 품질, 통제된 LLM 비용을 갖춘 프로덕션 서비스를 구축하기 위한 스타터 베이스라인.
+> "기억을 저장하지 않습니다. 다시 만날 수 있게 합니다."
+
+과거의 나와 현재의 나를 조용히 마주 앉히는 서비스.
+
+## 서비스 문서
+- [서비스 철학 & AI 역할 정의](docs/PHILOSOPHY.md)
+- [제품 가이드 (MVP, 알림, 톤)](docs/PRODUCT.md)
+- [디자인 원칙 (UX/UI, 글로벌, 수익)](docs/DESIGN_PRINCIPLES.md)
+- [기술 아키텍처](docs/ARCHITECTURE.md)
 
 ## 포함 항목
 - FastAPI 서비스 골격 (`src/between_memories_service`)
@@ -8,7 +16,7 @@
 - 토큰 예산 제한을 활용한 비용 가드레일
 - Claude Code 로컬 설정 및 안전 훅 (`.claude/settings.json`, `automation/hooks/block-dangerous.ps1`)
 - 기본 테스트, 린트, 실행 명령어
-- `docs/`에 아키텍처 및 소스 노트
+- `docs/`에 아키텍처 및 서비스 가이드 문서
 
 ## 빠른 시작
 1. 환경 생성 및 의존성 설치:
