@@ -27,45 +27,68 @@
 - `.claude/settings.json` 권한 + pre-tool 훅으로 위험 명령 차단.
 - 동작 변경이 있는 PR에는 테스트 필수.
 
-## 앱 기술 스택
+## 기술 스택
+
+### MVP (7일 버전)
+
+| 영역 | 기술 | 선택 이유 |
+|------|------|-----------|
+| Frontend | React Native (Expo) | 알림 쉬움, 배포 빠름, export 구현 용이 |
+| Backend / DB / Auth | Supabase | Auth + DB + RLS 한번에 해결, 빠른 세팅 |
+| 결제 | Polar (테스트 모드) | 빠른 구독 연동 |
+| AI | ❌ 사용 안 함 | 수동 문장 150개로 시작 |
+
+### 2차 단계 (AI 고도화 시)
 
 | 영역 | 기술 | 비고 |
 |------|------|------|
-| Frontend | React Native 또는 Flutter | iOS / Android 동시 지원 |
-| Backend | Python (FastAPI) | 현재 서비스 골격과 일치 |
-| Notification | Firebase Cloud Messaging (FCM) | 아침/점심/저녁 알림 |
-| DB | PostgreSQL 또는 SQLite (MVP) | 최소 스키마 |
+| AI Backend | Python (FastAPI) | `src/between_memories_service/` 재활용 |
 | AI | Anthropic Claude API | Haiku/Sonnet/Opus 라우팅 |
+| 캐시 | Redis | 프롬프트 해시 기반 캐시 |
 
-## 최소 DB 스키마
+> 기존 Python 백엔드(`src/between_memories_service/`)는 삭제하지 않고 유지한다.
+> AI 문장 생성 고도화 시 재활용한다.
 
-```
-User
-├── id              (PK)
-├── language        (ko, en, ja, ...)
-├── notification_preferences  (JSON: morning/lunch/evening ON/OFF)
-└── created_at
+## DB 스키마 (Supabase)
 
-Message
-├── id              (PK)
-├── type            (morning / lunch / evening / variation / user_memory)
-├── text
-├── language
-└── created_at
+```sql
+create table users (
+  id uuid primary key references auth.users(id),
+  language text not null default 'ko',
+  timezone text not null default 'Asia/Seoul',
+  subscription_status text not null default 'free',
+  created_at timestamptz not null default now()
+);
 
-DeliveryLog
-├── id              (PK)
-├── user_id         (FK → User)
-├── message_id      (FK → Message, nullable for silence)
-├── delivered_at
-└── is_silence      (boolean)
+create table messages (
+  id bigint primary key generated always as identity,
+  text text not null,
+  type text not null check (type in ('morning', 'lunch', 'evening', 'variation')),
+  language text not null default 'ko',
+  created_at timestamptz not null default now()
+);
+
+create table user_memories (
+  id bigint primary key generated always as identity,
+  user_id uuid not null references users(id),
+  text text not null check (length(text) <= 300),
+  created_at timestamptz not null default now()
+);
+
+create table delivery_logs (
+  id bigint primary key generated always as identity,
+  user_id uuid not null references users(id),
+  message_id bigint references messages(id),
+  delivered_at timestamptz not null default now(),
+  is_silence boolean not null default false
+);
 ```
 
 ### 스키마 설계 원칙
 - 유저 개인정보 최소화 (이름, 생년월일, SNS 연동 없음)
-- Message 테이블은 언어별 분리로 i18n 대응
+- Message 테이블에 `language` 컬럼으로 i18n 대응
 - DeliveryLog에 `is_silence` 플래그로 침묵도 기록 (침묵은 기능)
-- 감정 태그, 카테고리, 분석용 필드 금지
+- user_memories: 텍스트 300자 제한 (1~3줄), 감정 태그/카테고리/분석 필드 금지
 
 ## 다국어(i18n) 구조
 
@@ -73,7 +96,9 @@ DeliveryLog
 - 직역이 아닌 현지 감각 재작성(Transcreation) 원칙
 - 문화 민감도 필터: 종교/정치 단어 차단, 강한 감정 단어 제한
 
-## 즉시 확장 가능한 항목
-- 모델 + 안정적 프롬프트 해시를 키로 하는 Redis 또는 DB 기반 캐시 추가.
-- Batch 작업을 위한 비동기 큐 워커 추가.
-- 일일 비용 대시보드 구축을 위한 Usage & Cost API 수집 작업 추가.
+## 즉시 확장 가능한 항목 (2차 단계)
+- AI 문장 생성 연동 (FastAPI 백엔드 + Claude 라우팅)
+- 모델 + 안정적 프롬프트 해시를 키로 하는 Redis 기반 캐시
+- Batch 작업을 위한 비동기 큐 워커
+- 일일 비용 대시보드 구축을 위한 Usage & Cost API 수집
+- 인스타 export 기능 (9:16, 1:1, 4:5 PNG)

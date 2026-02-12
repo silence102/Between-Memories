@@ -24,23 +24,34 @@ It does NOT store, analyze, score, or coach. It observes and leaves room for int
 - English sentences must also maintain observer tone — no advice/judgment.
 - Refer to docs/PHILOSOPHY.md and docs/PRODUCT.md for full tone and content rules.
 
+## 7-day MVP scope (current phase)
+- Goal: working app, not perfect app. "작동"이 기준이다.
+- Tech: Expo (React Native) + Supabase + Polar. No Python backend for MVP.
+- AI: NOT used in MVP. Sentences come from a curated library of 150+ entries.
+- Do NOT suggest adding features beyond the MVP scope.
+- Do NOT over-engineer. Minimal code that works.
+- Refer to docs/MVP_ROADMAP.md for the full 7-day plan.
+
 ## Sentence engine rules
-- Sources: curated library, AI-generated, user past entries.
+- MVP: curated library only (no AI generation).
+- 2nd phase: curated library, AI-generated, user past entries.
 - Modes: morning (08:00), lunch (13:00), evening (18:00), variation (random).
-- Variation probability: 5-10%. Silence is a valid variation.
+- Variation probability: 5-10%. Silence probability: 3%. Both are valid.
+- No duplicate sentences within same day. No repeat within 7 days.
 - Refer to docs/PRODUCT.md for sentence engine architecture details.
 
 ## Feature guardrails
 - Never build: emotion scores, growth metrics, goal management, analysis reports, comparison features.
 - Never build: premium sentences — paid features are cosmetic only (themes, backgrounds).
+- Never build in MVP: AI real-time generation, auto-recommendation, custom backgrounds, stats, reports, Instagram export.
 - User records: 1-3 lines text only. No emotion tags, no categories, no folders.
 
 ## Development rules
 1. Keep changes small and testable.
 2. Prefer adding tests for behavior changes.
 3. Never hardcode secrets; use environment variables.
-4. Keep API contracts explicit with Pydantic models.
-5. For AI features:
+4. Do NOT suggest feature additions. Do NOT over-engineer. Philosophy violation = failure.
+5. For AI features (2nd phase only):
    - Start with Haiku for cheap classification/rewrites.
    - Use Sonnet for most build tasks.
    - Escalate to Opus only for critical reasoning quality.

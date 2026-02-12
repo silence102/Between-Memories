@@ -5,6 +5,7 @@
 과거의 나와 현재의 나를 조용히 마주 앉히는 서비스.
 
 ## 서비스 문서
+- [7일 MVP 로드맵](docs/MVP_ROADMAP.md)
 - [서비스 철학 & AI 역할 정의](docs/PHILOSOPHY.md)
 - [제품 가이드 (MVP, 알림, 톤)](docs/PRODUCT.md)
 - [디자인 원칙 (UX/UI, 글로벌, 수익)](docs/DESIGN_PRINCIPLES.md)
